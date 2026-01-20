@@ -1,0 +1,7 @@
+{
+  "server_url": "http://192.168.1.63:55000/api/v1",
+  "agent_id": "550e8400-e29b-41d4-a716-446655440000",
+  "agent_name": "Finance-PC-01",
+  "heartbeat_interval": 15,
+  "policy_sync_interval": 30
+}
