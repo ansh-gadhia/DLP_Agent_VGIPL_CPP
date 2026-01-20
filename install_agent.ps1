@@ -46,27 +46,6 @@ function Download-File {
     }
 }
 
-# Function to validate IP address or hostname
-function Validate-ServerUrl {
-    param ([string]$Url)
-    
-    if ([string]::IsNullOrWhiteSpace($Url)) {
-        return $false
-    }
-    
-    # Check if it's a valid URL format
-    if ($Url -match '^https?://') {
-        return $true
-    }
-    
-    # If no protocol, check if it's a valid hostname or IP
-    if ($Url -match '^[a-zA-Z0-9\.\-]+$') {
-        return $true
-    }
-    
-    return $false
-}
-
 # Function to create agent_config.json
 function Create-ConfigFile {
     param (
@@ -183,32 +162,26 @@ else {
 Write-Host "`n[Step 5/6] Agent Configuration" -ForegroundColor Cyan
 Write-Host "============================================================" -ForegroundColor Cyan
 
-# Server URL
-$serverUrl = ""
-while (-not (Validate-ServerUrl $serverUrl)) {
-    $serverUrl = Read-Host "Enter Server URL/IP (e.g., http://192.168.1.100:55000/api/v1 or localhost)"
-    if ([string]::IsNullOrWhiteSpace($serverUrl)) {
-        Write-Host "[ERROR] Server URL is required!" -ForegroundColor Red
-    }
-    elseif (-not (Validate-ServerUrl $serverUrl)) {
-        Write-Host "[ERROR] Invalid URL format!" -ForegroundColor Red
+# Server IP/Hostname
+$serverIp = ""
+while ([string]::IsNullOrWhiteSpace($serverIp)) {
+    $serverIp = Read-Host "Enter Server IP Address or Hostname (e.g., 192.168.1.100 or localhost)"
+    if ([string]::IsNullOrWhiteSpace($serverIp)) {
+        Write-Host "[ERROR] Server IP/Hostname is required!" -ForegroundColor Red
     }
 }
 
-# Add protocol if not present
-if ($serverUrl -notmatch '^https?://') {
-    $serverUrl = "http://$serverUrl"
-}
+# Remove any protocol if user accidentally added it
+$serverIp = $serverIp -replace '^https?://', ''
+# Remove any trailing slashes or paths
+$serverIp = $serverIp -replace '/.*$', ''
+# Remove any port if user accidentally added it
+$serverIp = $serverIp -replace ':\d+$', ''
 
-# Add default port and path if not present
-if ($serverUrl -notmatch ':\d+') {
-    $serverUrl = "$serverUrl`:55000"
-}
-if ($serverUrl -notmatch '/api/v1$') {
-    $serverUrl = "$serverUrl/api/v1"
-}
+# Construct the full server URL
+$serverUrl = "http://" + $serverIp + ":55000/api/v1"
 
-Write-Host "[OK] Server URL: $serverUrl" -ForegroundColor Green
+Write-Host "[OK] Server IP: $serverIp" -ForegroundColor Green
 
 # Agent Name
 $agentName = ""
